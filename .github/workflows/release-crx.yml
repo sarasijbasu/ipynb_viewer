@@ -1,4 +1,4 @@
-name: Build and Release CRX
+name: Release CRX
 
 on:
   push:
@@ -6,38 +6,21 @@ on:
       - 'v*'
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Package extension folder to ZIP
-        uses: cardinalby/webext-buildtools-pack-extension-dir-action@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          extensionDir: '.'
-          zipFilePath: 'build/ipynb_viewer.zip'
-          ignores: |
-            .git
-            .github
-            build
-            README.md
+          node-version: 20
 
-      - name: Sign ZIP into CRX
-        uses: cardinalby/webext-buildtools-chrome-crx-action@v2
-        with:
-          zipFilePath: 'build/ipynb_viewer.zip'
-          crxFilePath: 'build/ipynb_viewer.crx'
-          privateKey: ${{ secrets.CRX_PRIVATE_KEY }}
+      - name: Build CRX
+        run: |
+          npx crx pack . -p <(echo "${{ secrets.CRX_KEY }}") -o ipynb_viewer.crx
 
-      - name: Create GitHub Release
+      - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            build/ipynb_viewer.crx
-            build/ipynb_viewer.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: ipynb_viewer.crx
