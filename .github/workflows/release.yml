@@ -28,14 +28,14 @@ jobs:
           mkdir -p dist
           cp -r manifest.json background.js content.js docx-export.js render.js viewer.css viewer.html viewer.js icons lib dist/
 
-      - name: Restore or generate private key
+      - name: Load CRX_PRIVATE_KEY
         env:
           CRX_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
         run: |
-          if [ -n "$CRX_KEY" ]; then
-            echo "$CRX_KEY" | base64 -d > /tmp/key.pem
+          if echo "$CRX_KEY" | grep -q "BEGIN"; then
+            echo "$CRX_KEY" > /tmp/key.pem
           else
-            openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt -out /tmp/key.pem
+            echo "$CRX_KEY" | base64 -d > /tmp/key.pem
           fi
 
       - name: Build CRX and ZIP
