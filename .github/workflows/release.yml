@@ -1,26 +1,42 @@
-name: Release CRX
+name: Build and Release CRX
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Build CRX
+      - name: Restore private key
+        env:
+          CRX_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
         run: |
-          npx crx pack . -p <(echo "${{ secrets.CRX_KEY }}") -o ipynb_viewer.crx
+          if [ -n "$CRX_KEY" ]; then
+            echo "$CRX_KEY" | base64 -d > /tmp/key.pem
+          else
+            openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt -out /tmp/key.pem
+          fi
 
-      - name: Upload Release Asset
+      - name: Build CRX and ZIP
+        run: |
+          rm -rf .git .github
+          npx crx3 -p /tmp/key.pem -o /tmp/ipynb_viewer.crx .
+          zip -r /tmp/ipynb_viewer.zip .
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ipynb_viewer.crx
+          files: |
+            /tmp/ipynb_viewer.crx
+            /tmp/ipynb_viewer.zip
+          generate_release_notes: true
