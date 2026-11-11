@@ -4,19 +4,31 @@ on:
   push:
     tags:
       - 'v*'
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  build-and-release:
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Restore private key
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Prepare dist folder
+        run: |
+          mkdir -p dist
+          cp -r manifest.json background.js content.js docx-export.js render.js viewer.css viewer.html viewer.js icons lib dist/
+
+      - name: Restore or generate private key
         env:
           CRX_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
         run: |
@@ -28,15 +40,15 @@ jobs:
 
       - name: Build CRX and ZIP
         run: |
-          rm -rf .git .github
-          npx crx3 -p /tmp/key.pem -o /tmp/ipynb_viewer.crx .
-          zip -r /tmp/ipynb_viewer.zip .
+          npx --yes crx3 -p /tmp/key.pem -o ipynb_viewer.crx dist
+          cd dist && zip -r ../ipynb_viewer.zip .
 
-      - name: Create GitHub Release
+      - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'release'
         with:
+          tag_name: ${{ github.ref_name }}
           files: |
-            /tmp/ipynb_viewer.crx
-            /tmp/ipynb_viewer.zip
+            ipynb_viewer.crx
+            ipynb_viewer.zip
           generate_release_notes: true
