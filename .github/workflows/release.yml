@@ -32,10 +32,12 @@ jobs:
         env:
           CRX_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
         run: |
-          if echo "$CRX_KEY" | grep -q "BEGIN"; then
-            echo "$CRX_KEY" > /tmp/key.pem
+          if [ -z "$CRX_KEY" ]; then
+            openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt -out /tmp/key.pem
+          elif printf "%s" "$CRX_KEY" | grep -q "BEGIN"; then
+            printf "%s\n" "$CRX_KEY" | tr -d '\r' > /tmp/key.pem
           else
-            echo "$CRX_KEY" | base64 -d > /tmp/key.pem
+            printf "%s" "$CRX_KEY" | base64 -di > /tmp/key.pem
           fi
 
       - name: Build CRX and ZIP
