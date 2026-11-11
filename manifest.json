@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "IPYNB Viewer",
+  "version": "1.1.0",
+  "description": "View Jupyter notebooks (.ipynb) in Chrome without a kernel. Edit or delete cells, clear outputs, and export to PDF or Word.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "IPYNB Viewer - open a notebook"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "file:///*.ipynb",
+        "https://raw.githubusercontent.com/*.ipynb"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["viewer.html"],
+      "matches": [
+        "file:///*",
+        "https://raw.githubusercontent.com/*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IPYNB Viewer</title>
+  <link rel="stylesheet" href="lib/katex.min.css">
+  <link rel="stylesheet" href="lib/github.min.css">
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+  <header class="toolbar" id="toolbar" hidden>
+    <div class="title">
+      <span id="fileName">notebook.ipynb</span>
+      <span id="meta"></span>
+    </div>
+    <div class="controls">
+      <label><input type="checkbox" id="optCode" checked> Code</label>
+      <label><input type="checkbox" id="optOutputs" checked> Outputs</label>
+      <label><input type="checkbox" id="optPrompts" checked> In/Out labels</label>
+      <label class="edit-toggle"><input type="checkbox" id="optEdit"> Edit mode</label>
+      <span class="sep"></span>
+      <button id="btnClearAll" type="button" class="edit-only" title="Remove saved outputs from every cell">Clear all outputs</button>
+      <button id="btnReset" type="button" disabled title="Discard all edits and restore the notebook as it was opened">Reset</button>
+      <button id="btnSave" type="button" disabled title="Download the edited notebook as a new .ipynb file">Save .ipynb</button>
+      <span class="sep"></span>
+      <button id="btnOpen" type="button">Open file…</button>
+      <button id="btnWord" type="button" title="Download as a Word (.docx) document">Export Word</button>
+      <button id="btnPdf" type="button" class="primary" title="Opens the print dialog - choose “Save as PDF”">Export PDF</button>
+    </div>
+  </header>
+
+  <main id="notebook" class="notebook" hidden></main>
+
+  <section id="error" class="error" role="alert" hidden></section>
+
+  <section id="empty" class="empty">
+    <div class="empty-card">
+      <h1>IPYNB Viewer</h1>
+      <p class="lead">Read Jupyter notebooks - code, Markdown and saved outputs - without running a kernel.</p>
+
+      <div class="dropzone" id="dropzone">
+        <strong>Drop a .ipynb file here</strong>
+        <span>or</span>
+        <button id="btnChoose" type="button" class="primary">Choose file…</button>
+      </div>
+
+      <h2>Open notebooks straight from disk</h2>
+      <ol class="setup">
+        <li>
+          <span class="status" id="fileAccessStatus"></span>
+          Turn on <b>Allow access to file URLs</b> for this extension.
+          <button id="btnSettings" type="button">Open extension settings</button>
+        </li>
+        <li>
+          Make Chrome the default app for <code>.ipynb</code> files (right-click a notebook, choose
+          <i>Open with</i> → Chrome → “always”). Double-clicking then opens it here.
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" hidden></div>
+  <input type="file" id="fileInput" accept=".ipynb,application/json,.json" hidden>
+
+  <script src="lib/purify.min.js"></script>
+  <script src="lib/marked.umd.js"></script>
+  <script src="lib/highlight.min.js"></script>
+  <script src="lib/katex.min.js"></script>
+  <script src="lib/docx.iife.js"></script>
+  <script src="render.js"></script>
+  <script src="docx-export.js"></script>
+  <script src="viewer.js"></script>
+</body>
+</html>
